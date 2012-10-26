@@ -122,7 +122,7 @@ PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1 >= $DBUS_GLIB_REQUIRED)
 KIXMAIL_CFLAGS="$KIXMAIL_CFLAGS $DBUS_GLIB_CFLAGS"
 KIXMAIL_LIBS="$KIXMAIL_LIBS $DBUS_GLIB_LIBS"
 
-WEBKIT_GTK_REQUIRED=1.7.92
+WEBKIT_GTK_REQUIRED=1.6.1
 AC_ARG_WITH(webkit2,
         [AC_HELP_STRING([--with-webkit2], [build with WebKit2 [default=no]])],
         [],[with_webkit2=no])
@@ -162,7 +162,7 @@ KIXMAIL_CFLAGS="$KIXMAIL_CFLAGS $GOB_INTROSPECTION_CFLAGS"
 KIXMAIL_LIBS="$KIXMAIL_LIBS $GOB_INTROSPECTION_LIBS"
 
 dnl Decide whether to use libsoup or libsoup-gnome (if available)
-LIBSOUP_MIN_VERSION=2.37.1
+LIBSOUP_MIN_VERSION=2.36.1
 
 if test "x$platform" = "xGNOME"; then
    dnl For the GNOME platform allow using libsoup-gnome, if available
