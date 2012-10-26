@@ -1,25 +1,26 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * kixmail.c
- * Copyright (C) Parthasarathi Susarla 2012 <ajaysusarla@gmail.com>
- * 
+ * kixmail-application.c
+ * Copyright (C) 2012  Parthasarathi Susarla <ajaysusarla@gmail.com>
+ *
  * kixmail is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * kixmail is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "kixmail.h"
+
+#include <config.h>
+
+#include "kixmail-application.h"
 
 #include <glib/gi18n.h>
-
 
 
 /* For testing propose use the local (not installed) ui file */
@@ -28,12 +29,12 @@
 #define TOP_WINDOW "window"
 
 
-G_DEFINE_TYPE (Kixmail, kixmail, GTK_TYPE_APPLICATION);
+G_DEFINE_TYPE (KixmailApplication, kixmail_application, GTK_TYPE_APPLICATION);
 
 /* Create a new window loading a file */
 static void
 kixmail_new_window (GApplication *app,
-                           GFile        *file)
+                    GFile        *file)
 {
 	GtkWidget *window;
 
@@ -80,9 +81,9 @@ kixmail_activate (GApplication *application)
 
 static void
 kixmail_open (GApplication  *application,
-                     GFile        **files,
-                     gint           n_files,
-                     const gchar   *hint)
+              GFile        **files,
+              gint           n_files,
+              const gchar   *hint)
 {
   gint i;
 
@@ -91,34 +92,24 @@ kixmail_open (GApplication  *application,
 }
 
 static void
-kixmail_init (Kixmail *object)
+kixmail_application_init (KixmailApplication *object)
 {
 
 }
 
 static void
-kixmail_finalize (GObject *object)
+kixmail_application_finalize (GObject *object)
 {
 
-	G_OBJECT_CLASS (kixmail_parent_class)->finalize (object);
+	G_OBJECT_CLASS (kixmail_application_parent_class)->finalize (object);
 }
 
 static void
-kixmail_class_init (KixmailClass *klass)
+kixmail_application_class_init (KixmailApplicationClass *klass)
 {
 	G_APPLICATION_CLASS (klass)->activate = kixmail_activate;
 	G_APPLICATION_CLASS (klass)->open = kixmail_open;
 
-	G_OBJECT_CLASS (klass)->finalize = kixmail_finalize;
+	G_OBJECT_CLASS (klass)->finalize = kixmail_application_finalize;
 }
 
-Kixmail *
-kixmail_new (void)
-{
-	g_type_init ();
-
-	return g_object_new (kixmail_get_type (),
-	                     "application-id", "org.gnome.kixmail",
-	                     "flags", G_APPLICATION_HANDLES_OPEN,
-	                     NULL);
-}

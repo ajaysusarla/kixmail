@@ -15,9 +15,10 @@ AM_CFLAGS =\
 bin_PROGRAMS = kixmail
 
 kixmail_SOURCES = \
-	main.c \
-	kixmail.h \
-	kixmail.c	
+	main.c                \
+	kixmail-application.h \
+	kixmail-application.c	\
+	$(NULL)
 
 kixmail_LDFLAGS = \
 	-Wl,--export-dynamic
