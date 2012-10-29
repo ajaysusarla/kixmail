@@ -20,7 +20,16 @@
 
 #include "kixmail-application.h"
 
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <glib/gstdio.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
+#include <libnotify/notify.h>
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 
 /* For testing propose use the local (not installed) ui file */
@@ -28,8 +37,55 @@
 #define UI_FILE "src/kixmail.ui"
 #define TOP_WINDOW "window"
 
+#define APPLICATION_WINDOW_MIN_WIDTH	300
+#define APPLICATION_WINDOW_MIN_HEIGHT	100
+
+
+#define KIXMAIL_APPLICATION_GET_PRIVATE(object)             \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((object),                   \
+                                KIXMAIL_TYPE_APPLICATION,   \
+                                KixmailApplicationPriv))
 
 G_DEFINE_TYPE (KixmailApplication, kixmail_application, GTK_TYPE_APPLICATION);
+
+struct _KixmailApplicationPriv {
+  gboolean no_connect;
+  gboolean start_hidden;
+  gboolean show_preferences;
+
+  gchar *geometry;
+  gchar *preferences_tab;
+
+};
+
+/* callbacks */
+static gboolean
+preferences_cb (const char *option_name,
+                const char *value,
+                gpointer data,
+                GError **error)
+{
+  KixmailApplication *self = data;
+  KixmailApplicationPriv *priv = KIXMAIL_APPLICATION_GET_PRIVATE (self);
+
+  priv->show_preferences = TRUE;
+
+  g_free (priv->preferences_tab);
+  priv->preferences_tab = g_strdup (value);
+
+  return TRUE;
+}
+
+static gboolean
+show_version_cb (const char *option_name,
+                 const char *value,
+                 gpointer data,
+                 GError **error)
+{
+  g_print ("%s\n", PACKAGE_STRING);
+
+  exit (EXIT_SUCCESS);
+}
 
 /* Create a new window loading a file */
 static void
@@ -61,8 +117,8 @@ kixmail_new_window (GApplication *app,
 				UI_FILE);
         }
 	g_object_unref (builder);
-	
-	
+
+
 	gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (app));
 	if (file != NULL)
 	{
@@ -74,16 +130,99 @@ kixmail_new_window (GApplication *app,
 
 /* GApplication implementation */
 static void
-kixmail_activate (GApplication *application)
+kixmail_application_quit_mainloop (GApplication *application)
 {
+  G_APPLICATION_CLASS(kixmail_application_parent_class)->quit_mainloop (application);
+}
+
+static int
+kixmail_application_command_line (GApplication *application,
+                                  GApplicationCommandLine *cmdline)
+{
+
   kixmail_new_window (application, NULL);
+  return 0;
+}
+
+static gboolean
+kixmail_application_local_command_line (GApplication *application,
+                                        gchar ***arguments,
+                                        gint *exit_status)
+{
+  KixmailApplication *self = KIXMAIL_APPLICATION (application);
+  KixmailApplicationPriv *priv = KIXMAIL_APPLICATION_GET_PRIVATE (self);
+  gint i;
+  gchar **argv;
+  gint argc = 0;
+  gboolean retval = FALSE;
+  GError *error = NULL;
+  gboolean no_connect = FALSE;
+  gboolean start_hidden = FALSE;
+
+  GOptionContext *optcontext;
+  GOptionGroup *group;
+  GOptionEntry options[] = {
+      { "no-connect", 'n',
+        0, G_OPTION_ARG_NONE, &no_connect,
+        N_("Don't connect on startup"),
+        NULL },
+      { "start-hidden", 'h',
+        0, G_OPTION_ARG_NONE, &start_hidden,
+        N_("Don't display anything on startup"),
+        NULL },
+      { "show-preferences", 'p',
+        G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK, &preferences_cb,
+        NULL, NULL },
+      { "version", 'v',
+        G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK, show_version_cb,
+        NULL, NULL },
+      { NULL }
+  };
+
+  group = g_option_group_new ("kixmail", NULL, NULL, application, NULL);
+  g_option_group_set_translation_domain (group, GETTEXT_PACKAGE);
+  g_option_group_add_entries (group, options);
+
+  optcontext = g_option_context_new(N_("- Kixmail E-Mail Client"));
+  g_option_context_add_group (optcontext, gtk_get_option_group (TRUE));
+  g_option_context_set_main_group (optcontext, group);
+  g_option_context_set_translation_domain (optcontext, GETTEXT_PACKAGE);
+
+  argc = g_strv_length (*arguments);
+
+  /* We dup the args because g_option_context_parse() sets things to NULL,
+   * but we want to parse all the command line to the primary instance
+   * if necessary. */
+  argv = g_new (gchar*, argc + 1);
+  for (i = 0; i <= argc; i++)
+    argv[i] = (*arguments)[i];
+
+  if (!g_option_context_parse (optcontext, &argc, &argv, &error))
+    {
+      g_print ("%s\nRun '%s --help' to see a full list of available command "
+          "line options.\n",
+          error->message, argv[0]);
+      g_warning ("Error in empathy init: %s", error->message);
+
+      *exit_status = EXIT_FAILURE;
+      retval = TRUE;
+    }
+
+  g_free (argv);
+
+  g_option_context_free (optcontext);
+
+  priv->no_connect = no_connect;
+  priv->start_hidden = start_hidden;
+
+  return retval;
 }
 
 static void
-kixmail_open (GApplication  *application,
-              GFile        **files,
-              gint           n_files,
-              const gchar   *hint)
+kixmail_application_open (GApplication  *application,
+                          GFile        **files,
+                          gint           n_files,
+                          const gchar   *hint)
 {
   gint i;
 
@@ -92,9 +231,42 @@ kixmail_open (GApplication  *application,
 }
 
 static void
-kixmail_application_init (KixmailApplication *object)
+kixmail_application_init (KixmailApplication *application)
 {
+  application->priv = KIXMAIL_APPLICATION_GET_PRIVATE (application);
+}
 
+static void
+kixmail_application_set_property (GObject *object,
+                                  guint prop_id,
+                                  const GValue *value,
+                                  GParamSpec *pspec)
+{
+  KixmailApplication *self = KIXMAIL_APPLICATION (object);
+  KixmailApplicationPriv *priv = KIXMAIL_APPLICATION_GET_PRIVATE (self);
+
+  switch (prop_id)
+    {
+    case PROP_NO_CONNECT:
+      priv->no_connect = g_value_get_boolean (value);
+      break;
+    case PROP_START_HIDDEN:
+      priv->start_hidden = g_value_get_boolean (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+kixmail_application_constructed (GObject *object)
+{
+}
+
+static void
+kixmail_application_dispose (GObject *object)
+{
 }
 
 static void
@@ -105,11 +277,40 @@ kixmail_application_finalize (GObject *object)
 }
 
 static void
-kixmail_application_class_init (KixmailApplicationClass *klass)
+kixmail_application_class_init (KixmailApplicationClass *class)
 {
-	G_APPLICATION_CLASS (klass)->activate = kixmail_activate;
-	G_APPLICATION_CLASS (klass)->open = kixmail_open;
+  GObjectClass *object_class;
+  GApplicationClass *app_class;
+  GParamSpec *spec;
+  /*  GtkApplicationClass *gtkapp_class;*/
 
-	G_OBJECT_CLASS (klass)->finalize = kixmail_application_finalize;
+  object_class = G_OBJECT_CLASS (class);
+  object_class->set_property = kixmail_application_set_property;
+  object_class->constructed = kixmail_application_constructed;
+  object_class->dispose = kixmail_application_dispose;
+  object_class->finalize = kixmail_application_finalize;
+
+  app_class = G_APPLICATION_CLASS (class);
+  app_class->quit_mainloop  = kixmail_application_quit_mainloop;
+	app_class->open = kixmail_application_open;
+  app_class->command_line = kixmail_application_command_line;
+  app_class->local_command_line = kixmail_application_local_command_line;
+
+  spec = g_param_spec_boolean ("no-connect", "no connect",
+                               "Don't connect on startup",
+                               FALSE,
+                               G_PARAM_STATIC_STRINGS | G_PARAM_WRITABLE |\
+                               G_PARAM_CONSTRUCT_ONLY);
+  g_object_class_install_property (object_class, PROP_NO_CONNECT, spec);
+
+  spec = g_param_spec_boolean ("start-hidden", "start hidden",
+                               "Don't display anything on startup",
+                               FALSE,
+                               G_PARAM_STATIC_STRINGS | G_PARAM_WRITABLE |\
+                               G_PARAM_CONSTRUCT_ONLY);
+  g_object_class_install_property (object_class, PROP_START_HIDDEN, spec);
+
+  g_type_class_add_private (class, sizeof (KixmailApplicationPriv));
+
 }
 

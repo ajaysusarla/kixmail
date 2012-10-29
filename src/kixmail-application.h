@@ -23,6 +23,8 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
+#include "kixmail-window.h"
+
 G_BEGIN_DECLS
 
 #define KIXMAIL_TYPE_APPLICATION             (kixmail_application_get_type ())
@@ -34,6 +36,13 @@ G_BEGIN_DECLS
 
 typedef struct _KixmailApplicationClass KixmailApplicationClass;
 typedef struct _KixmailApplication KixmailApplication;
+typedef struct _KixmailApplicationPriv KixmailApplicationPriv;
+
+enum
+{
+    PROP_NO_CONNECT = 1,
+    PROP_START_HIDDEN
+};
 
 struct _KixmailApplicationClass
 {
@@ -43,6 +52,9 @@ struct _KixmailApplicationClass
 struct _KixmailApplication
 {
 	GtkApplication parent_instance;
+
+
+  KixmailApplicationPriv *priv;
 };
 
 GType kixmail_application_get_type (void) G_GNUC_CONST;

@@ -26,7 +26,15 @@
 
 #include <libxml/parser.h>
 
-
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 int
 main (int argc, char *argv[])
