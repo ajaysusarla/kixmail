@@ -62,7 +62,6 @@ po/stamp-it
 po/Makefile.in.in
 py-compile
 stamp-h1
-m4/*
 omf.make
 xmldocs.make
 src/kixmail
