@@ -267,11 +267,12 @@ AC_SUBST([ENABLE_CODING_STYLE_CHECKS])
 
 AC_CONFIG_FILES([
         Makefile
-        src/Makefile
+        tools/Makefile
         po/Makefile.in
+        data/Makefile
         libkix/Makefile
         libkix-gtk/Makefile
-        tools/Makefile
+        src/Makefile
         tests/Makefile
 ])
 AC_OUTPUT
