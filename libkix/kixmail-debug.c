@@ -31,17 +31,6 @@
 static KixmailDebugFlags flags = 0;
 static gboolean initialized = FALSE;
 
-  KIXMAIL_DEBUG_ACCOUNT = 1 << 1,
-  KIXMAIL_DEBUG_OTHER = 1 << 2,
-  KIXMAIL_DEBUG_CONNECTIVITY = 1 << 3,
-  KIXMAIL_DEBUG_TLS = 1 << 4,
-  KIXMAIL_DEBUG_TESTS = 1 << 5,
-  KIXMAIL_DEBUG_MIME = 1 << 6,
-  KIXMAIL_DEBUG_DBUS = 1 << 7,
-  KIXMAIL_DEBUG_WINDOW = 1 << 8,
-  KIXMAIL_DEBUG_SEARCH = 1 << 9,
-  KIXMAIL_DEBUG_APPLICATION = 1 << 10,
-
 static GDebugKey keys[] = {
   { "Account", KIXMAIL_DEBUG_ACCOUNT },
   { "Other", KIXMAIL_DEBUG_OTHER },
@@ -49,7 +38,7 @@ static GDebugKey keys[] = {
   { "TLS", KIXMAIL_DEBUG_TLS },
   { "Tests", KIXMAIL_DEBUG_TESTS },
   { "Mime", KIXMAIL_DEBUG_MIME },
-  { "DBus", KIXMAIL_DEBUG_DEBUS },
+  { "DBus", KIXMAIL_DEBUG_DBUS },
   { "Window", KIXMAIL_DEBUG_WINDOW },
   { "Search", KIXMAIL_DEBUG_SEARCH },
   { "Application", KIXMAIL_DEBUG_APPLICATION },
@@ -87,7 +76,7 @@ kixmail_debug_valist (KixmailDebugFlags flag,
 void
 kixmail_debug_set_flags (KixmailDebugFlags new_flags)
 {
-  flags | = new_flags;
+  flags |= new_flags;
   initialized = TRUE;
 }
 

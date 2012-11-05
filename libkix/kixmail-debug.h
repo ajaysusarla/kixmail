@@ -43,7 +43,7 @@ typedef enum
 } KixmailDebugFlags;
 
 void kixmail_debug_set_flags (KixmailDebugFlags flags);
-gblloean kixmail_debug_flag_is_set (KixmailDebugFlags flags);
+gboolean kixmail_debug_flag_is_set (KixmailDebugFlags flags);
 
 void kixmail_debug (KixmailDebugFlags flag, const gchar *format, ...)
   G_GNUC_PRINTF (2, 3);
