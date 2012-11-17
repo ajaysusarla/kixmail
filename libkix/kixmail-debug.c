@@ -29,7 +29,6 @@
 #ifdef ENABLE_DEBUG
 
 static KixmailDebugFlags flags = 0;
-static gboolean initialized = FALSE;
 
 static GDebugKey keys[] = {
   { "Account", KIXMAIL_DEBUG_ACCOUNT },
@@ -46,44 +45,28 @@ static GDebugKey keys[] = {
 };
 
 static void
-kixmail_debug_set_flags_from_env (void)
+debug_set_flags (KixmailDebugFlags new_flags)
 {
-  guint nkeys;
-  const gchar *flags_string;
-
-  for (nkeys = 0; keys[nkeys].value; nkeys++);
-
-  flags_string = g_getenv ("KIXMAIL_DEBUG");
-
-  if (flags_string)
-    kixmail_debug_set_flags (g_parse_debug_string (flags_string, keys, nkeys));
-
-  initialized = TRUE;
-}
-
-static void
-kixmail_debug_valist (KixmailDebugFlags flag,
-                      const gchar *format,
-                      va_list args)
-{
- if (G_UNLIKELY(!initialized))
-    kixmail_debug_set_flags_from_env ();
-
-  if (flag & flags)
-    g_logv (G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, format, args);
+  flags |= new_flags;
 }
 
 void
-kixmail_debug_set_flags (KixmailDebugFlags new_flags)
+kixmail_debug_set_flags (const gchar *flags_string)
 {
-  flags |= new_flags;
-  initialized = TRUE;
+  guint nkeys;
+
+  for (nkeys = 0; keys[nkeys].value; nkeys++);
+
+  if (flags_string)
+      debug_set_flags (g_parse_debug_string (flags_string, keys, nkeys));
 }
+
+
 
 gboolean
 kixmail_debug_flag_is_set (KixmailDebugFlags flag)
 {
-  return flag & flags;
+  return (flag & flags) != 0;
 }
 
 void
@@ -91,11 +74,17 @@ kixmail_debug (KixmailDebugFlags flag,
                const gchar *format,
                ...)
 {
+  gchar *message;
   va_list args;
 
   va_start (args, format);
-  kixmail_debug_valist (flag, format, args);
+  message = g_strdup_vprintf (format, args);
   va_end (args);
+
+  if (flag & flags)
+    g_log (G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "%s", message);
+
+  g_free (message);
 }
 
 #else

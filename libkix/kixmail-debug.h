@@ -42,7 +42,7 @@ typedef enum
   KIXMAIL_DEBUG_APPLICATION = 1 << 10,
 } KixmailDebugFlags;
 
-void kixmail_debug_set_flags (KixmailDebugFlags flags);
+void kixmail_debug_set_flags (const gchar *flags_string);
 gboolean kixmail_debug_flag_is_set (KixmailDebugFlags flags);
 
 void kixmail_debug (KixmailDebugFlags flag, const gchar *format, ...)
