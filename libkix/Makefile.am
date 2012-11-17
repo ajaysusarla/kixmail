@@ -24,10 +24,12 @@ BUILT_SOURCES =		\
 
 libkix_headers = 				\
 	kixmail-debug.h				\
+	kixmail-utils.h				\
 	$(NULL)
 
 libkix_sources = 				\
 	kixmail-debug.c				\
+	kixmail-utils.c				\
 	$(NULL)
 
 
