@@ -19,10 +19,12 @@
 #include <config.h>
 
 #include "kixmail-application.h"
+#include "libkix/kixmail-utils.h"
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <gio/gdesktopappinfo.h>
+#include <libnotify/notify.h>
 
 #include <libxml/parser.h>
 
@@ -42,15 +44,10 @@ main (int argc, char *argv[])
 	KixmailApplication *app;
 	gint status;
 
-
-	g_type_init ();
+  kixmail_init ();
+  gtk_init (&argc, &argv);
 
 	g_desktop_app_info_set_desktop_env ("GNOME");
-
-	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
-
 
 	g_set_prgname ("kixmail");
 
@@ -60,6 +57,8 @@ main (int argc, char *argv[])
 						  NULL);
 
 	status = g_application_run (G_APPLICATION (app), argc, argv);
+
+  notify_uninit (); /* initialised in kixmail-application.c */
 
 	g_object_unref (app);
 

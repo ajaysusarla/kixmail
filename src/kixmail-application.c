@@ -31,14 +31,11 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
+#define DEBUG_FLAG KIXMAIL_DEBUG_APPLICATION
+#include <libkix/kixmail-debug.h>
+#include <libkix-gtk/kixmail-ui-utils.h>
 
-/* For testing propose use the local (not installed) ui file */
-/* #define UI_FILE PACKAGE_DATA_DIR"/kixmail/ui/kixmail.ui" */
-#define UI_FILE "src/kixmail.ui"
-#define TOP_WINDOW "window"
-
-#define APPLICATION_WINDOW_MIN_WIDTH	300
-#define APPLICATION_WINDOW_MIN_HEIGHT	100
+#include "kixmail-window.h"
 
 
 #define KIXMAIL_APPLICATION_GET_PRIVATE(object)             \
@@ -53,6 +50,9 @@ struct _KixmailApplicationPriv {
   gboolean start_hidden;
   gboolean show_preferences;
 
+  gboolean activated;
+
+  GtkWidget *window;
   gchar *geometry;
   gchar *preferences_tab;
 
@@ -87,61 +87,12 @@ show_version_cb (const char *option_name,
   exit (EXIT_SUCCESS);
 }
 
-/* Create a new window loading a file */
-static void
-kixmail_new_window (GApplication *app,
-                    GFile        *file)
-{
-	GtkWidget *window;
-
-	GtkBuilder *builder;
-	GError* error = NULL;
-
-	/* Load UI from file */
-	builder = gtk_builder_new ();
-	if (!gtk_builder_add_from_file (builder, UI_FILE, &error))
-	{
-		g_critical ("Couldn't load builder file: %s", error->message);
-		g_error_free (error);
-	}
-
-	/* Auto-connect signal handlers */
-	gtk_builder_connect_signals (builder, NULL);
-
-	/* Get the window object from the ui file */
-	window = GTK_WIDGET (gtk_builder_get_object (builder, TOP_WINDOW));
-        if (!window)
-        {
-                g_critical ("Widget \"%s\" is missing in file %s.",
-				TOP_WINDOW,
-				UI_FILE);
-        }
-	g_object_unref (builder);
-
-
-	gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (app));
-	if (file != NULL)
-	{
-		/* TODO: Add code here to open the file in the new window */
-	}
-	gtk_widget_show_all (GTK_WIDGET (window));
-}
-
 
 /* GApplication implementation */
 static void
 kixmail_application_quit_mainloop (GApplication *application)
 {
   G_APPLICATION_CLASS(kixmail_application_parent_class)->quit_mainloop (application);
-}
-
-static int
-kixmail_application_command_line (GApplication *application,
-                                  GApplicationCommandLine *cmdline)
-{
-
-  kixmail_new_window (application, NULL);
-  return 0;
 }
 
 static gboolean
@@ -183,7 +134,7 @@ kixmail_application_local_command_line (GApplication *application,
   g_option_group_set_translation_domain (group, GETTEXT_PACKAGE);
   g_option_group_add_entries (group, options);
 
-  optcontext = g_option_context_new(N_("- Kixmail E-Mail Client"));
+  optcontext = g_option_context_new(N_("- Gtk based E-Mail Client"));
   g_option_context_add_group (optcontext, gtk_get_option_group (TRUE));
   g_option_context_set_main_group (optcontext, group);
   g_option_context_set_translation_domain (optcontext, GETTEXT_PACKAGE);
@@ -202,7 +153,7 @@ kixmail_application_local_command_line (GApplication *application,
       g_print ("%s\nRun '%s --help' to see a full list of available command "
           "line options.\n",
           error->message, argv[0]);
-      g_warning ("Error in empathy init: %s", error->message);
+      g_warning ("Error in kixmail init: %s", error->message);
 
       *exit_status = EXIT_FAILURE;
       retval = TRUE;
@@ -218,16 +169,63 @@ kixmail_application_local_command_line (GApplication *application,
   return retval;
 }
 
+
+static int
+kixmail_application_command_line (GApplication *application,
+                                  GApplicationCommandLine *cmdline)
+{
+
+  KixmailApplication *self = KIXMAIL_APPLICATION (application);
+  KixmailApplicationPriv *priv = KIXMAIL_APPLICATION_GET_PRIVATE (self);
+  gchar **args, **argv;
+  gint argc, exit_status, i;
+
+  printf ("kixmail_application_command_line\n");
+
+  args = g_application_command_line_get_arguments (cmdline, &argc);
+
+  /* We have to make an extra copy of the array, since g_option_context_parse()
+   * assumes that it can remove strings from the array without freeing them. */
+
+  argv = g_new (gchar*, argc + 1);
+  for (i = 0; i <= argc; i++)
+    argv[i] = args[i];
+
+  if (kixmail_application_local_command_line (application, &argv, &exit_status))
+    DEBUG ("failed to parse command line!");
+
+  g_free (argv);
+  g_strfreev (args);
+
+  if (!priv->activated) {
+    priv->activated = TRUE;
+
+    /* The UI*/
+  }
+
+  priv->window = kixmail_window_new (GTK_APPLICATION (application));
+
+  gtk_application_add_window (GTK_APPLICATION (application),
+                              GTK_WINDOW (priv->window));
+
+  if (!priv->start_hidden)
+    kixmail_window_present (GTK_WINDOW (priv->window));
+
+  return 0;
+}
+
 static void
 kixmail_application_open (GApplication  *application,
                           GFile        **files,
                           gint           n_files,
                           const gchar   *hint)
 {
+  /*
   gint i;
 
   for (i = 0; i < n_files; i++)
     kixmail_new_window (application, files[i]);
+  */
 }
 
 static void
@@ -253,6 +251,7 @@ kixmail_application_set_property (GObject *object,
     case PROP_START_HIDDEN:
       priv->start_hidden = g_value_get_boolean (value);
       break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -262,6 +261,18 @@ kixmail_application_set_property (GObject *object,
 static void
 kixmail_application_constructed (GObject *object)
 {
+  KixmailApplication *self = KIXMAIL_APPLICATION (object);
+  KixmailApplicationPriv *priv = KIXMAIL_APPLICATION_GET_PRIVATE (self);
+
+  printf ("kixmail_application_constructed\n");
+  textdomain (GETTEXT_PACKAGE);
+  g_set_application_name (_(PACKAGE_NAME));
+
+  gtk_window_set_default_icon_name ("kixmail");
+
+  notify_init (_(PACKAGE_NAME));
+
+  priv->activated = FALSE;
 }
 
 static void
@@ -283,6 +294,7 @@ kixmail_application_class_init (KixmailApplicationClass *class)
   GApplicationClass *app_class;
   GParamSpec *spec;
   /*  GtkApplicationClass *gtkapp_class;*/
+  printf ("kixmail_application_class_init\n");
 
   object_class = G_OBJECT_CLASS (class);
   object_class->set_property = kixmail_application_set_property;

@@ -20,4 +20,43 @@
 #ifndef _KIXMAIL_WINDOW_H_
 #define _KIXMAIL_WINDOW_H_
 
+#include <gtk/gtk.h>
+
+G_BEGIN_DECLS
+
+#define KIXMAIL_TYPE_WINDOW         (kixmail_window_get_type ())
+#define KIXMAIL_WINDOW(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), KIXMAIL_TYPE_WINDOW, KixmailWindow))
+#define KIXMAIL_WINDOW_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST ((k), KIXMAIL_TYPE_WINDOW, KixmailWindowClass))
+#define KIXMAIL_IS_WINDOW(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), KIXMAIL_TYPE_WINDOW))
+#define KIXMAIL_IS_WINDOW_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), KIXMAIL_TYPE_WINDOW))
+#define KIXMAIL_WINDOW_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), KIXMAIL_TYPE_WINDOW, KixmailWindowClass))
+
+typedef struct _KixmailWindow KixmailWindow;
+typedef struct _KixmailWindowClass KixmailWindowClass;
+typedef struct _KixmailWindowPriv KixmailWindowPriv;
+
+struct _KixmailWindowClass
+{
+  GtkApplicationWindowClass parent_class;
+
+  void   (* close) (KixmailWindow *window);
+};
+
+struct _KixmailWindow
+{
+  GtkApplicationWindow parent;
+
+  KixmailWindowPriv *priv;
+};
+
+GType kixmail_window_get_type (void) G_GNUC_CONST;
+
+GtkWidget * kixmail_window_new (GtkApplication *app);
+
+GMenuModel * kixmail_window_get_menu_model (KixmailWindow *window);
+
+void kixmail_window_show_sidebar (KixmailWindow *window);
+void kixmail_window_hide_sidebar (KixmailWindow *window);
+
+G_END_DECLS
 #endif /*_KIXMAIL_WINDOW_H_*/

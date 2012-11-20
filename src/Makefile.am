@@ -18,10 +18,11 @@ AM_CPPFLAGS =								\
 	$(NULL)
 
 
-LDADD =																\
-	$(top_builddir)/libkix/libkix.la		\
-	$(GCR_LIBS) 												\
-	$(KIXMAIL_LIBS)											\
+LDADD =																				\
+	$(top_builddir)/libkix-gtk/libkix-gtk.la		\
+	$(top_builddir)/libkix/libkix.la						\
+	$(GCR_LIBS) 																\
+	$(KIXMAIL_LIBS)															\
 	$(NULL)
 
 
@@ -36,6 +37,7 @@ libexec_PROGRAMS = \
 	$(NULL)
 
 kixmail_sources = \
+	kixmail-folder-sidebar.h kixmail-folder-sidebar.c \
 	kixmail-application.h kixmail-application.c \
 	kixmail-window.h kixmail-window.c \
 	main.c 					\
@@ -46,8 +48,9 @@ kixmail_SOURCES = 		\
 	$(NULL)
 
 kixmail_LDADD =		\
-	$(top_builddir)/libkix/libkix.la 	\
-	$(KIXMAIL_LIBS)										\
+	$(top_builddir)/libkix-gtk/libkix-gtk.la		\
+	$(top_builddir)/libkix/libkix.la 						\
+	$(KIXMAIL_LIBS)															\
 	$(NULL)
 
 check_c_sources = 		\
@@ -58,7 +61,10 @@ include $(top_srcdir)/tools/check-coding-style.mk
 check-local: check-coding-style
 
 uidir = $(datadir)/kixmail/ui
-ui_DATA = kixmail.ui
+ui_DATA = \
+	kixmail-window.ui \
+	kixmail.ui \
+	$(NULL)
 
 EXTRA_DIST = $(ui_DATA)
 

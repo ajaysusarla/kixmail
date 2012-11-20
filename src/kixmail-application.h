@@ -44,15 +44,12 @@ enum
     PROP_START_HIDDEN
 };
 
-struct _KixmailApplicationClass
-{
+struct _KixmailApplicationClass {
 	GtkApplicationClass parent_class;
 };
 
-struct _KixmailApplication
-{
+struct _KixmailApplication {
 	GtkApplication parent_instance;
-
 
   KixmailApplicationPriv *priv;
 };
