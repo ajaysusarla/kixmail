@@ -23,6 +23,7 @@ BUILT_SOURCES =		\
 	$(NULL)
 
 libkix_headers = 				\
+	kixmail-gsettings.h   \
 	kixmail-debug.h				\
 	kixmail-utils.h				\
 	kixmail-ip.h					\
