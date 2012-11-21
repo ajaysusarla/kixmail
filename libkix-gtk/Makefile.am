@@ -21,12 +21,14 @@ BUILT_SOURCES =		\
 	kixmail-gtk-enum-types.c 	\
 	$(NULL)
 
-libkix_gtk_headers = 				\
-	kixmail-ui-utils.h
+libkix_gtk_headers = 						 \
+	kixmail-ui-utils.h 						 \
+	kixmail-initial-setup-widget.h \
 	$(NULL)
 
-libkix_gtk_sources = 				\
-	kixmail-ui-utils.c
+libkix_gtk_sources = 				     \
+	kixmail-ui-utils.c						 \
+	kixmail-initial-setup-widget.c \
 	$(NULL)
 
 
