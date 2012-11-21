@@ -40,7 +40,7 @@ kixmail_sources = \
 	kixmail-folder-sidebar.h kixmail-folder-sidebar.c \
 	kixmail-application.h kixmail-application.c \
 	kixmail-window.h kixmail-window.c \
-	main.c 					\
+	kixmail-main.c 					\
 	$(NULL)
 
 kixmail_SOURCES = 		\

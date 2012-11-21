@@ -1,5 +1,5 @@
 /*
- * main.c
+ * kixmail-main.c
  * Copyright (C) 2012  Parthasarathi Susarla <ajaysusarla@gmail.com>
  *
  * kixmail is free software: you can redistribute it and/or modify it
