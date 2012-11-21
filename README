@@ -14,3 +14,11 @@ Mailing List
 
 Reporting Bugs
 ==============
+
+For Debug logs, run kixmail as follows:
+
+ $ G_MESSAGES_DEBUG=all KIXMAIL_DEBUG=all ./kixmail
+
+If you are building kixmail from source and installing in a non-standard directory,
+Then add the path of 'share' to XDG_DATA_DIRS. This will fix the errors thrown by
+gsettings.
