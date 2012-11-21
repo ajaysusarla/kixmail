@@ -39,19 +39,8 @@ typedef struct _KixmailFolderSidebarPriv KixmailFolderSidebarPriv;
 
 struct _KixmailFolderSidebar {
   GtkScrolledWindow parent;
-  GtkTreeView *tree_view;
-  char *uri;
-  KixmailWindow *window;
 
-  /* DnD */
-  GList     *drag_list;
-	gboolean  drag_data_received;
-	int       drag_data_info;
-	gboolean  drop_occured;
-
-  GtkWidget *popup_menu;
-  GtkWidget *empty_trash_item;
-  GtkWidget *popup_menu_properties_item;
+  KixmailFolderSidebarPriv *priv;
 };
 
 struct _KixmailFolderSidebarClass {
