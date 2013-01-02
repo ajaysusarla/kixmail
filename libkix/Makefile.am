@@ -26,13 +26,17 @@ libkix_headers = 				\
 	kixmail-gsettings.h   \
 	kixmail-debug.h				\
 	kixmail-utils.h				\
-	kixmail-ip.h					\
+	kixmail-io.h					\
+	kixmail-socket.h			\
+	kixmail-filter-input-stream.h \
 	$(NULL)
 
 libkix_sources = 				\
 	kixmail-debug.c				\
 	kixmail-utils.c				\
-	kixmail-ip.c 					\
+	kixmail-io.c 					\
+	kixmail-socket.c			\
+	kixmail-filter-input-stream.c \
 	$(NULL)
 
 
