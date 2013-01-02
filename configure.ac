@@ -62,7 +62,7 @@ AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(.)
 AM_MAINTAINER_MODE([enable])
 
-AM_INIT_AUTOMAKE([1.11 no-define -Wno-portability tar-ustar no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.13 no-define -Wno-portability tar-ustar no-dist-gzip dist-xz])
 
 
 dnl Support silent build rules. Disable

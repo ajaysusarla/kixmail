@@ -5,7 +5,7 @@ srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
 PKG_NAME="kixmail"
-REQUIRED_AUTOMAKE_VERSION=1.9
+REQUIRED_AUTOMAKE_VERSION=1.13
 
 (test -f $srcdir/configure.ac \
   && test -f $srcdir/README \
